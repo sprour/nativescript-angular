@@ -17,6 +17,12 @@ import {traceLog, ViewUtil, NgView} from "./view-util";
 import {escapeRegexSymbols} from "utils/utils";
 import { Device } from "platform";
 
+import {RuntimeAnimationCompiler} from 'angular2/src/compiler/animation/runtime_animation_compiler';
+import {AnimationFactory} from 'angular2/src/core/animation/animation_factory';
+import {AnimationPlayer} from 'angular2/src/core/animation/animation_player';
+import {AnimationKeyframe} from 'angular2/src/core/animation/animation_keyframe';
+import {NativeAnimationPlayer} from './native-animation-player';
+
 export { rendererTraceCategory } from "./view-util";
 
 @Injectable()
@@ -62,12 +68,17 @@ export class NativeScriptRenderer extends Renderer {
     private hasComponentStyles: boolean;
     private rootRenderer: NativeScriptRootRenderer;
 
+    private _animationFactory: AnimationFactory;
+
     private get viewUtil(): ViewUtil {
         return this.rootRenderer.viewUtil;
     }
 
     constructor(private _rootRenderer: NativeScriptRootRenderer, private componentProto: RenderComponentType) {
         super();
+
+        this._animationFactory = new RuntimeAnimationCompiler().compileAnimations(componentProto.animations);
+
         this.rootRenderer = _rootRenderer;
         let page = this.rootRenderer.page;
         let stylesLength = componentProto.styles.length;
@@ -134,25 +145,71 @@ export class NativeScriptRenderer extends Renderer {
     }
 
     animateNodeEnter(node: NgView) {
+        let animation = this._animationFactory.createEnterAnimation(node, this);
+        if (animation) {
+            animation.play();
+        }
     }
 
     animateNodeLeave(node: NgView) {
+        let animation = this._animationFactory.createLeaveAnimation(node, this);
+        if (animation) {
+            animation.play();
+        }
+    }
+
+    animateAddClass(node: NgView, className: string) {
+        let animation = this._animationFactory.createAddClassAnimation(className, node, this);
+        if (animation) {
+            animation.play();
+        }
+    }
+
+    animateRemoveClass(node: NgView, className: string) {
+        let animation = this._animationFactory.createRemoveClassAnimation(className, node, this);
+        if (animation) {
+            animation.play();
+        }
+    }
+
+    animateSetAttribute(node: NgView, attributeName: string, attributeValue: string) {
+        let animation = this._animationFactory.createSetAttributeAnimation(attributeName, attributeValue, node, this);
+        if (animation) {
+            animation.play();
+        }
+    }
+
+    animateRemoveAttribute(node: NgView, attributeName: string) {
+        let animation = this._animationFactory.createRemoveAttributeAnimation(attributeName, node, this);
+        if (animation) {
+            animation.play();
+        }
+    }
+
+    animate(element: Node, keyframes: AnimationKeyframe[], duration: number, delay: number, easing: string): AnimationPlayer {
+        return new NativeAnimationPlayer(element, keyframes, duration, delay, easing);
     }
 
     public destroyView(hostElement: NgView, viewAllNodes: NgView[]) {
         traceLog("NativeScriptRenderer.destroyView");
         // Seems to be called on component dispose only (router outlet)
-        //TODO: handle this when we resolve routing and navigation.
+        // TODO: handle this when we resolve routing and navigation.
     }
 
     setElementProperty(renderElement: NgView, propertyName: string, propertyValue: any) {
-        traceLog("NativeScriptRenderer.setElementProperty " + renderElement + ': ' + propertyName + " = " + propertyValue);
+        traceLog("NativeScriptRenderer.setElementProperty " + renderElement + ": " + propertyName + " = " + propertyValue);
         this.viewUtil.setProperty(renderElement, propertyName, propertyValue);
     }
 
     setElementAttribute(renderElement: NgView, attributeName: string, attributeValue: string) {
-        traceLog("NativeScriptRenderer.setElementAttribute " + renderElement + ': ' + attributeName + " = " + attributeValue);
-        return this.setElementProperty(renderElement, attributeName, attributeValue);
+        traceLog("NativeScriptRenderer.setElementAttribute " + renderElement + ": " + attributeName + " = " + attributeValue);
+        this.setElementProperty(renderElement, attributeName, attributeValue);
+        if (attributeValue != null && attributeValue !== undefined) {
+            this.animateSetAttribute(renderElement, attributeName, attributeValue);
+        }
+        else {
+            this.animateRemoveAttribute(renderElement, attributeName);
+        }
     }
 
     setElementClass(renderElement: NgView, className: string, isAdd: boolean): void {
@@ -160,8 +217,10 @@ export class NativeScriptRenderer extends Renderer {
 
         if (isAdd) {
             this.viewUtil.addClass(renderElement, className);
+            this.animateAddClass(renderElement, className);
         } else {
             this.viewUtil.removeClass(renderElement, className);
+            this.animateRemoveClass(renderElement, className);
         }
     }
 
