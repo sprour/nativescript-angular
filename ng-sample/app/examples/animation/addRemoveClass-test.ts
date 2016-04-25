@@ -4,7 +4,7 @@ import {style, animate, group, sequence} from "angular2/src/core/metadata/animat
 
 @Component({
     selector: "main-component",
-    templateUrl: "./examples/animation/addRemoveClass-test.html",
+    templateUrl: "./examples/animation/AddRemoveClass-test.html",
     animations: {
          "addClass(on)": [
              style({"background-color": "white"}),
@@ -20,7 +20,7 @@ import {style, animate, group, sequence} from "angular2/src/core/metadata/animat
          ]
      }
 })
-export class addRemoveClassAnimationTest {
+export class AddRemoveClassAnimationTest {
 
     isOn = false;
     text = "Normal";

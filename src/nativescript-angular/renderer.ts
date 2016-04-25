@@ -139,20 +139,21 @@ export class NativeScriptRenderer extends Renderer {
         traceLog('NativeScriptRenderer.detachView');
         for (var i = 0; i < viewRootNodes.length; i++) {
             var node = viewRootNodes[i];
-            this.viewUtil.removeChild(<NgView>node.parent, node);
-            this.animateNodeLeave(node);
+            let animation = this._animationFactory.createLeaveAnimation(node, this);
+            if (animation) {
+                animation.onDone(() => {
+                    this.viewUtil.removeChild(<NgView>node.parent, node);
+                });
+                animation.play();
+            }
+            else {
+                this.viewUtil.removeChild(<NgView>node.parent, node);
+            }
         }
     }
 
     animateNodeEnter(node: NgView) {
         let animation = this._animationFactory.createEnterAnimation(node, this);
-        if (animation) {
-            animation.play();
-        }
-    }
-
-    animateNodeLeave(node: NgView) {
-        let animation = this._animationFactory.createLeaveAnimation(node, this);
         if (animation) {
             animation.play();
         }

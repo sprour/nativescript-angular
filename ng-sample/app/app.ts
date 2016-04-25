@@ -16,10 +16,10 @@ import trace = require("trace");
 // trace.setCategories(routerTraceCategory);
 trace.enable();
 
-import {ngClassAnimationTest} from './examples/animation/ngClass-test';
-import {ngEnterLeaveAnimationTest} from './examples/animation/ngEnterLeave-test';
-import {addRemoveClassAnimationTest} from './examples/animation/addRemoveClass-test';
-import {setAttributeAnimationTest} from './examples/animation/setAttribute-test';
+import {NgClassAnimationTest} from './examples/animation/NgClass-test';
+import {EnterLeaveAnimationTest} from './examples/animation/EnterLeave-test';
+import {AddRemoveClassAnimationTest} from './examples/animation/addRemoveClass-test';
+import {SetAttributeAnimationTest} from './examples/animation/setAttribute-test';
 import {RendererTest} from './examples/renderer-test';
 import {Benchmark} from './performance/benchmark';
 import {ListTest} from './examples/list/list-test';
@@ -31,7 +31,7 @@ import {ModalTest} from "./examples/modal/modal-test";
 import {PlatfromDirectivesTest} from "./examples/platform-directives/platform-directives-test";
 import {RouterOutletTest} from "./examples/navigation/router-outlet-test";
 
-nativeScriptBootstrap(setAttributeAnimationTest).then((compRef) => {
+nativeScriptBootstrap(EnterLeaveAnimationTest).then((compRef) => {
     console.log("nativeScriptBootstrap resloved: " + compRef);
 }).catch((e) => {
     console.log("nativeScriptBootstrap error: " + e);

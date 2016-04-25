@@ -1,0 +1,7 @@
+<StackLayout orientation='vertical'>
+    <Button text="Add" (tap)="onAdd()"></Button>
+    <Button text="Remove" (tap)="onRemoveAll()"></Button>
+    <StackLayout>
+        <Button *ngFor="#item  of items" text="{{ item.title }}"></Button>    
+    </StackLayout>
+</StackLayout>

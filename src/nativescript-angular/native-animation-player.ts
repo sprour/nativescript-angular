@@ -15,11 +15,13 @@ export class NativeAnimationPlayer implements AnimationPlayer {
     private animation: animationModule.Animation;
     private properties = [];
     private target: View;
-
+    private keyframe: AnimationKeyframe;
+    
     constructor(element: Node, keyframes: AnimationKeyframe[], duration: number, delay: number, easing: string) {
 
         if (duration === 0) {
             duration = 0.01;
+            this.keyframe = keyframes[0];
         }
 
         if (keyframes.length > 2) {
@@ -91,6 +93,37 @@ export class NativeAnimationPlayer implements AnimationPlayer {
 
     play(): void {
         if (this.animation) {
+            if (this.keyframe) {
+                let valueSource = observable.ValueSource.VisualState;
+                for (let style of this.keyframe.styles) {
+                    for (let substyle in style.styles) {
+                        let value = style.styles[substyle];
+                        let property = styleProperty.getPropertyByCssName(substyle);
+                        if (property) {
+                            if (typeof value === "string" && property.valueConverter) {
+                                value = property.valueConverter(<string>value);
+                            }
+                            this.target.style._setValue(property, value, valueSource);
+                        }
+                        else if (typeof value === "string" && substyle === "transform") {
+                            let animationInfo = <animationModule.AnimationDefinition>{};
+                            NativeAnimationPlayer.parseTransform(<string>value, animationInfo);
+                            if (animationInfo.scale) {
+                                this.target.style._setValue(styleProperty.getPropertyByCssName("scaleX"), animationInfo.scale.x, valueSource);
+                                this.target.style._setValue(styleProperty.getPropertyByCssName("scaleY"), animationInfo.scale.y, valueSource);
+                            }
+                            if (animationInfo.translate) {
+                                this.target.style._setValue(styleProperty.getPropertyByCssName("translateX"), animationInfo.translate.x, valueSource);
+                                this.target.style._setValue(styleProperty.getPropertyByCssName("translateY"), animationInfo.translate.x, valueSource);
+                            }
+                            if (animationInfo.rotate) {
+                                this.target.style._setValue(styleProperty.getPropertyByCssName("rotate"), animationInfo.rotate, valueSource);
+                            }
+                        }
+                    }
+                }
+            }
+            
             this.animation.play()
                 .then(() => { this._onFinish(); })
                 .catch((e) => {});

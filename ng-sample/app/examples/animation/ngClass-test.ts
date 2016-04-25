@@ -4,10 +4,10 @@ import {style, animate, group, sequence} from "angular2/src/core/metadata/animat
 
 @Component({
     selector: "main-component",
-    templateUrl: "./examples/animation/ngClass-test.html",
-    styleUrls: [ "./examples/animation/ngClass-test.css" ]
+    templateUrl: "./examples/animation/NgClass-test.html",
+    styleUrls: [ "./examples/animation/NgClass-test.css" ]
 })
-export class ngClassAnimationTest {
+export class NgClassAnimationTest {
 
     isOn = false;
     text = "Normal";
@@ -15,7 +15,7 @@ export class ngClassAnimationTest {
     onTap() {
         this.isOn = !this.isOn;
         if (this.isOn) {
-            this.text = "Toggled";   
+            this.text = "Toggled";
         }
         else {
             this.text = "Normal";

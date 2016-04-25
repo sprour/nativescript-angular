@@ -4,7 +4,7 @@ import {style, animate, group, sequence} from "angular2/src/core/metadata/animat
 
 @Component({
     selector: "main-component",
-    templateUrl: "./examples/animation/setAttribute-test.html",
+    templateUrl: "./examples/animation/SetAttribute-test.html",
     animations: {
         "setAttribute(text=Button)": [
             style({"background-color": "white"}),
@@ -14,5 +14,5 @@ import {style, animate, group, sequence} from "angular2/src/core/metadata/animat
         ],
     }
 })
-export class setAttributeAnimationTest {
+export class SetAttributeAnimationTest {
 }

@@ -4,23 +4,23 @@ import {style, animate, group, sequence} from "angular2/src/core/metadata/animat
 
 @Component({
     selector: "main-component",
-    templateUrl: "./examples/animation/ngEnterLeave-test.html",
+    templateUrl: "./examples/animation/EnterLeave-test.html",
     animations: {
         "ngEnter": [
             style({"opacity": "0"}),
             sequence([
-                animate({"opacity": "1"}, 2000),
+                animate({"opacity": "1"}, 3000),
             ])
         ],
         "ngLeave": [
             style({"opacity": "1"}),
             sequence([
-                animate({"opacity": "0"}, 2000),
+                animate({"opacity": "0"}, 1500),
             ])
         ]
     }
 })
-export class ngEnterLeaveAnimationTest {
+export class EnterLeaveAnimationTest {
 
     items = [];
 
@@ -30,11 +30,7 @@ export class ngEnterLeaveAnimationTest {
         }
     }
 
-    onClear() {
+    onRemoveAll() {
         this.items = [];
-    }
-
-    onRemoveItem(index) {
-        this.items.splice(index, 1);
     }
 }
