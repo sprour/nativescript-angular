@@ -1,8 +1,9 @@
-import {Directive, Input} from '@angular/core';
-import {isString} from '@angular/core/src/facade/lang';
-import {Router, Instruction} from '@angular/router-deprecated';
+import {Directive, Input, HostBinding, OnDestroy, HostListener} from '@angular/core';
 import {Location} from '@angular/common';
+import {Router, RouteSegment} from '@angular/router';
 import { log } from "./common";
+import {isString, isArray, isPresent} from '@angular/core/src/facade/lang';
+import {ObservableWrapper} from '@angular/core/src/facade/async';
 
 /**
  * The NSRouterLink directive lets you link to specific parts of your app.
@@ -34,29 +35,56 @@ import { log } from "./common";
  */
 @Directive({
     selector: '[nsRouterLink]',
-    inputs: ['params: nsRouterLink'],
-    host: {
-        '(tap)': 'onTap()',
-        '[class.router-link-active]': 'isRouteActive'
-    }
 })
-export class NSRouterLink {
-    private _routeParams: any[];
+export class NSRouterLink implements OnDestroy {
+  @Input() target: string;
+  private _commands: any[] = [];
+  private _subscription: any;
 
-    // the instruction passed to the router to navigate
-    private _navigationInstruction: Instruction;
+  // the url displayed on the anchor element.
+  @HostBinding() href: string;
+  @HostBinding('class.router-link-active') isActive: boolean = false;
 
-    constructor(private _router: Router, private _location: Location) { }
+//   constructor(private _routeSegment: RouteSegment, private _router: Router) {
+  constructor(private _router: Router) {
+    // because auxiliary links take existing primary and auxiliary routes into account,
+    // we need to update the link whenever params or other routes change.
+    this._subscription =
+        ObservableWrapper.subscribe(_router.changes, (_) => { this._updateTargetUrlAndHref(); });
+  }
 
-    get isRouteActive(): boolean { return this._router.isRouteActive(this._navigationInstruction); }
+  ngOnDestroy() { ObservableWrapper.dispose(this._subscription); }
 
-    set params(changes: any[]) {
-        this._routeParams = changes;
-        this._navigationInstruction = this._router.generate(this._routeParams);
+  @Input()
+  set nsRouterLink(data: any[] | any) {
+    if (isArray(data)) {
+      this._commands = <any[]>data;
+    } else {
+      this._commands = [data];
     }
+    this._updateTargetUrlAndHref();
+  }
 
-    onTap(): void {
-        log("NSRouterLink onTap() instruction: " + JSON.stringify(this._navigationInstruction))
-        this._router.navigateByInstruction(this._navigationInstruction);
+
+  @HostListener("tap")
+  onTap(): boolean {
+    // If no target, or if target is _self, prevent default browser behavior
+    if (!isString(this.target) || this.target == '_self') {
+    //   this._router.navigate(this._commands, this._routeSegment);
+      this._router.navigate(this._commands);
+      return false;
     }
+    return true;
+  }
+
+  private _updateTargetUrlAndHref(): void {
+    // let tree = this._router.createUrlTree(this._commands, this._routeSegment);
+    let tree = this._router.createUrlTree(this._commands);
+    if (isPresent(tree)) {
+      this.href = this._router.serializeUrl(tree);
+      this.isActive = this._router.urlTree.contains(tree);
+    } else {
+      this.isActive = false;
+    }
+  }
 }
