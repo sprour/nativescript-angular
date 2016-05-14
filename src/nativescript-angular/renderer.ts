@@ -5,7 +5,7 @@ import {
     RenderComponentType,
     RenderDebugInfo
 } from '@angular/core/src/render/api';
-import {APP_ROOT_VIEW, DEVICE} from "./platform-providers";
+import {APP_ROOT_VIEW, DEVICE, ANIMATION_DRIVER} from "./platform-providers";
 import {isBlank} from '@angular/core/src/facade/lang';
 import {CONTENT_ATTR} from '@angular/platform-browser/src/dom/dom_renderer';
 import {View} from "ui/core/view";
@@ -15,6 +15,7 @@ import {Page} from 'ui/page';
 import {traceLog, ViewUtil, NgView} from "./view-util";
 import {escapeRegexSymbols} from "utils/utils";
 import { Device } from "platform";
+import { AnimationStyles, AnimationKeyframe, AnimationPlayer, AnimationDriver } from '@angular/platform-browser/core_private';
 
 export { rendererTraceCategory } from "./view-util";
 
@@ -22,10 +23,12 @@ export { rendererTraceCategory } from "./view-util";
 export class NativeScriptRootRenderer implements RootRenderer {
     private _rootView: View = null;
     private _viewUtil: ViewUtil;
-
-    constructor( @Optional() @Inject(APP_ROOT_VIEW) rootView: View, @Inject(DEVICE) device: Device) {
+    private _animationDriver: AnimationDriver;
+    
+    constructor( @Optional() @Inject(APP_ROOT_VIEW) rootView: View, @Inject(DEVICE) device: Device, @Inject(ANIMATION_DRIVER) animationDriver) {
         this._rootView = rootView;
         this._viewUtil = new ViewUtil(device);
+        this._animationDriver = animationDriver;
     }
 
     private _registeredComponents: Map<string, NativeScriptRenderer> = new Map<string, NativeScriptRenderer>();
@@ -48,7 +51,7 @@ export class NativeScriptRootRenderer implements RootRenderer {
     renderComponent(componentProto: RenderComponentType): Renderer {
         var renderer = this._registeredComponents.get(componentProto.id);
         if (isBlank(renderer)) {
-            renderer = new NativeScriptRenderer(this, componentProto);
+            renderer = new NativeScriptRenderer(this, componentProto, this._animationDriver);
             this._registeredComponents.set(componentProto.id, renderer);
         }
         return renderer;
@@ -65,7 +68,7 @@ export class NativeScriptRenderer extends Renderer {
         return this.rootRenderer.viewUtil;
     }
 
-    constructor(private _rootRenderer: NativeScriptRootRenderer, private componentProto: RenderComponentType) {
+    constructor(private _rootRenderer: NativeScriptRootRenderer, private componentProto: RenderComponentType, private animationDriver: AnimationDriver) {
         super();
         this.rootRenderer = _rootRenderer;
         let page = this.rootRenderer.page;
@@ -125,7 +128,6 @@ export class NativeScriptRenderer extends Renderer {
             //before Angular attaches the next view.
             node.templateParent = parent;
             this.viewUtil.insertChild(parent, node, childIndex);
-            this.animateNodeEnter(node);
         });
     }
 
@@ -134,14 +136,7 @@ export class NativeScriptRenderer extends Renderer {
         for (var i = 0; i < viewRootNodes.length; i++) {
             var node = viewRootNodes[i];
             this.viewUtil.removeChild(<NgView>node.parent, node);
-            this.animateNodeLeave(node);
         }
-    }
-
-    animateNodeEnter(node: NgView) {
-    }
-
-    animateNodeLeave(node: NgView) {
     }
 
     public destroyView(hostElement: NgView, viewAllNodes: NgView[]) {
@@ -174,6 +169,12 @@ export class NativeScriptRenderer extends Renderer {
         this.viewUtil.setStyleProperty(renderElement, styleName, styleValue);
     }
 
+    setElementStyles(renderElement: any, styles: { [key: string]: string; }): void {
+        for (var style in styles) {
+            this.viewUtil.setStyleProperty(renderElement, style, styles[style]);
+        }
+    }
+
     /**
     * Used only in debug mode to serialize property changes to comment nodes,
     * such as <template> placeholders.
@@ -195,6 +196,11 @@ export class NativeScriptRenderer extends Renderer {
 
     setText(renderNode: any, text: string) {
         traceLog("NativeScriptRenderer.setText");
+    }
+    
+    animate(element: any, startingStyles: AnimationStyles, keyframes: AnimationKeyframe[], duration: number, delay: number, easing: string): AnimationPlayer {
+        let player = this.animationDriver.animate(element, startingStyles, keyframes, duration, delay, easing);
+        return player;
     }
 
     public createTemplateAnchor(parentElement: NgView): NgView {

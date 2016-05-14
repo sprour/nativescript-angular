@@ -1,0 +1,5 @@
+<StackLayout orientation='vertical'>
+    <Button [text]="text" (tap)="onTap()" @state=" isOn ? 'active' : 'hidden' "></Button>
+</StackLayout>
+
+<!-- [ngClass]="{ on:isOn, off:!isOn }" -->

@@ -5,9 +5,10 @@ import {ContentView} from 'ui/content-view';
 import {LayoutBase} from 'ui/layouts/layout-base';
 import {ViewClass, getViewClass, getViewMeta, isKnownView, ViewExtensions, NgView, ViewClassMeta} from './element-registry';
 import {getSpecialPropertySetter} from "ui/builder/special-properties";
-import { ActionBar, ActionItem, NavigationButton } from "ui/action-bar";
+import {ActionBar, ActionItem, NavigationButton} from "ui/action-bar";
 import trace = require("trace");
 import {device, platformNames, Device} from "platform";
+import styleProperty = require('ui/styling/style-property');
 
 const IOS_PREFX: string = "@ios:";
 const ANDROID_PREFX: string = "@android:";
@@ -288,6 +289,14 @@ export class ViewUtil {
     }
 
     public setStyleProperty(view: NgView, styleName: string, styleValue: string): void {
-        throw new Error("Not implemented: setStyleProperty");
+        let property = styleProperty.getPropertyByCssName(styleName)
+        if (property) {
+            if (styleValue === null) {
+                (<View>view).style._resetValue(property);
+            }
+            else {
+                (<View>view).style._setValue(property, styleValue);
+            }
+        }
     }
 }
