@@ -1,12 +1,45 @@
-import {Parse5DomAdapter} from 'angular2/src/platform/server/parse5_adapter';
-import {setRootDomAdapter} from 'angular2/src/platform/dom/dom_adapter';
-import {Type} from 'angular2/src/facade/lang';
+import {ElementSchemaRegistry} from '@angular/compiler';
+import {SanitizationService} from '@angular/core/src/security';
+import {Parse5DomAdapter} from '@angular/platform-server';
+import {setRootDomAdapter} from '@angular/platform-browser/src/dom/dom_adapter';
+import {Type} from '@angular/core/src/facade/lang';
+
+export enum SecurityContext {
+  NONE,
+  HTML,
+  STYLE,
+  SCRIPT,
+  URL,
+  RESOURCE_URL,
+}
+
+export class NativeScriptElementSchemaRegistry extends ElementSchemaRegistry {
+  hasProperty(tagName: string, propName: string): boolean {
+      return true;
+  }
+
+  getMappedPropName(propName: string): string {
+      return propName;
+  }
+
+  securityContext(tagName: string, propName: string): any {
+      return SecurityContext.NONE;
+  }
+}
+
+export class NativeScriptSanitizationService extends SanitizationService {
+    sanitize(context: SecurityContext, value: string): string {
+        return value;
+    }
+}
 
 export class NativeScriptDomAdapter extends Parse5DomAdapter {
-  static makeCurrent() { setRootDomAdapter(new NativeScriptDomAdapter()); }
+  static makeCurrent() {
+      console.log("Setting DOM");
+      setRootDomAdapter(new NativeScriptDomAdapter());
+  }
 
   getXHR(): Type {
-      console.log('getXHR!');
       return null;
   }
 

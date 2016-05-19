@@ -1,8 +1,8 @@
-import {Component} from "angular2/core";
+import {Component} from "@angular/core";
 
 @Component({
     selector: "gestures",
-    templateUrl: "snippets/layouts.component.xml",
+    templateUrl: "snippets/layouts.component.html",
     styles:[
         'Image { background-color: coral }',
         '.title { margin: 10; horizontal-align: center; font-size: 32 }',

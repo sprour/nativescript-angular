@@ -1,10 +1,10 @@
-import {Component} from "angular2/core";
+import {Component} from "@angular/core";
 
 // >> icon-font-sample
 @Component({ 
     // >> (hide)
     selector: "icon-font",
-    templateUrl: "snippets/icon-font.component.xml",
+    templateUrl: "snippets/icon-font.component.html",
     styleUrls: ["snippets/icon-font.component.css"]
     // << (hide)
     // ...

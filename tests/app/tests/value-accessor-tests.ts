@@ -1,4 +1,4 @@
-//make sure you import mocha-config before angular2/core
+//make sure you import mocha-config before @angular/core
 import {assert} from "./test-config";
 import {View} from "ui/core/view";
 import {Slider} from "ui/slider";
@@ -13,7 +13,7 @@ import {DateValueAccessor} from "nativescript-angular/value-accessors/date-value
 import {TimeValueAccessor} from "nativescript-angular/value-accessors/time-value-accessor";
 import {SelectedIndexValueAccessor} from "nativescript-angular/value-accessors/selectedIndex-value-accessor";
 import {TextValueAccessor} from "nativescript-angular/value-accessors/text-value-accessor";
-import {ElementRef} from 'angular2/core';
+import {ElementRef} from '@angular/core';
 
 class TestElementRef implements ElementRef {
     constructor(public nativeElement: View) {};
@@ -98,14 +98,17 @@ describe("two-way binding via ng-model", () => {
 
     it("converts strings to int selection", () => {
         const accessor = new TestSelectedIndexValueAccessor()
-
+        
         accessor.writeValue(null);
+        accessor.ngAfterViewInit();
         assert.strictEqual(0, accessor.view.selectedIndex, "default to 0 on empty")
 
         accessor.writeValue("3");
+        accessor.ngAfterViewInit();
         assert.strictEqual(3, accessor.view.selectedIndex)
 
         accessor.writeValue("blah");
+        accessor.ngAfterViewInit();
         assert.strictEqual(0, accessor.view.selectedIndex, "default to 0 on parse errors")
     });
 

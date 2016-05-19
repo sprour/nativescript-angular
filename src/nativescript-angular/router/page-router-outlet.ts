@@ -1,30 +1,34 @@
-import {PromiseWrapper} from 'angular2/src/facade/async';
-import {isBlank, isPresent} from 'angular2/src/facade/lang';
-import {StringMapWrapper} from 'angular2/src/facade/collection';
-
-import {Attribute, DynamicComponentLoader, ComponentRef,
-    ElementRef, Injector, provide, Type, Component} from 'angular2/core';
-
-import * as routerHooks from 'angular2/src/router/lifecycle/lifecycle_annotations';
-import {hasLifecycleHook} from 'angular2/src/router/lifecycle/route_lifecycle_reflector';
+import {PromiseWrapper} from '@angular/core/src/facade/async';
+import {isBlank, isPresent} from '@angular/core/src/facade/lang';
+import {StringMapWrapper} from '@angular/core/src/facade/collection';
 
 import {
-    ComponentInstruction, RouteParams, RouteData,
-    RouterOutlet, LocationStrategy, Router,
-    OnActivate, OnDeactivate, CanReuse, OnReuse
-} from 'angular2/router';
+    Attribute, DynamicComponentLoader, ComponentRef,
+    ViewContainerRef, ViewChild, ElementRef,
+    ReflectiveInjector, provide, Type,
+    Component, Inject
+} from '@angular/core';
 
+import * as routerHooks from '@angular/router-deprecated/src/lifecycle/lifecycle_annotations';
+import {hasLifecycleHook} from '@angular/router-deprecated/src/lifecycle/route_lifecycle_reflector';
+
+import {Router, RouterOutlet, RouteData, RouteParams, ComponentInstruction, 
+    OnActivate, OnDeactivate, OnReuse, CanReuse} from '@angular/router-deprecated';
+import {LocationStrategy} from '@angular/common';
 import {topmost} from "ui/frame";
 import {Page, NavigatedData} from "ui/page";
+import {DEVICE} from "../platform-providers";
+import {Device} from "platform";
 import {log} from "./common";
 import {NSLocationStrategy} from "./ns-location-strategy";
 import {DetachedLoader} from "../common/detached-loader";
+import {ViewUtil} from "../view-util";
 
 let _resolveToTrue = PromiseWrapper.resolve(true);
 
 interface CacheItem {
-    componentRef: ComponentRef;
-    loaderRef?: ComponentRef;
+    componentRef: ComponentRef<any>;
+    loaderRef?: ComponentRef<any>;
     router: Router;
 }
 
@@ -34,7 +38,7 @@ interface CacheItem {
 class RefCache {
     private cache: Array<CacheItem> = new Array<CacheItem>();
 
-    public push(comp: ComponentRef, router: Router, loaderRef?: ComponentRef) {
+    public push(comp: ComponentRef<any>, router: Router, loaderRef?: ComponentRef<any>) {
         this.cache.push({ componentRef: comp, router: router, loaderRef: loaderRef });
     }
 
@@ -67,15 +71,21 @@ export class PageRouterOutlet extends RouterOutlet {
     private isInitalPage: boolean = true;
     private refCache: RefCache = new RefCache();
 
-    private componentRef: ComponentRef = null;
+    private componentRef: ComponentRef<any> = null;
     private currentInstruction: ComponentInstruction = null;
+    private viewUtil: ViewUtil;
+    @ViewChild('loader', { read: ViewContainerRef }) childContainerRef: ViewContainerRef;
 
-    constructor(private elementRef: ElementRef,
+    constructor(
+        private containerRef: ViewContainerRef,
         private loader: DynamicComponentLoader,
         private parentRouter: Router,
         @Attribute('name') nameAttr: string,
-        private location: NSLocationStrategy) {
-        super(elementRef, loader, parentRouter, nameAttr)
+        private location: NSLocationStrategy,
+        @Inject(DEVICE) device: Device
+        ) {
+        super(containerRef, loader, parentRouter, nameAttr);
+        this.viewUtil = new ViewUtil(device);
     }
 
     /**
@@ -113,7 +123,7 @@ export class PageRouterOutlet extends RouterOutlet {
     private activateOnGoForward(nextInstruction: ComponentInstruction, previousInstruction: ComponentInstruction): Promise<any> {
         let componentType = nextInstruction.componentType;
         let resultPromise: Promise<any>;
-        let loaderRef: ComponentRef = undefined;
+        let loaderRef: ComponentRef<any> = undefined;
         const childRouter = this.parentRouter.childRouter(componentType);
 
         const providersArray = [
@@ -125,13 +135,13 @@ export class PageRouterOutlet extends RouterOutlet {
         if (this.isInitalPage) {
             log("PageRouterOutlet.activate() inital page - just load component: " + componentType.name);
             this.isInitalPage = false;
-            resultPromise = this.loader.loadNextToLocation(componentType, this.elementRef, Injector.resolve(providersArray));
+            resultPromise = this.loader.loadNextToLocation(componentType, this.containerRef, ReflectiveInjector.resolve(providersArray));
         } else {
             log("PageRouterOutlet.activate() forward navigation - create detached loader in the loader container: " + componentType.name);
 
             const page = new Page();
             providersArray.push(provide(Page, { useValue: page }));
-            resultPromise = this.loader.loadIntoLocation(DetachedLoader, this.elementRef, "loader", Injector.resolve(providersArray))
+            resultPromise = this.loader.loadNextToLocation(DetachedLoader, this.childContainerRef, ReflectiveInjector.resolve(providersArray))
                 .then((pageComponentRef) => {
                     loaderRef = pageComponentRef;
                     return (<DetachedLoader>loaderRef.instance).loadComponent(componentType);
@@ -153,13 +163,11 @@ export class PageRouterOutlet extends RouterOutlet {
     }
 
 
-    private loadComponentInPage(page: Page, componentRef: ComponentRef): Promise<ComponentRef> {
+    private loadComponentInPage(page: Page, componentRef: ComponentRef<any>): Promise<ComponentRef<any>> {
         //Component loaded. Find its root native view.
         const componentView = componentRef.location.nativeElement;
         //Remove it from original native parent.
-        if (<any>componentView.parent) {
-            (<any>componentView.parent).removeChild(componentView);
-        }
+        this.viewUtil.removeChild(componentView.parent, componentView);
         //Add it to the new page
         page.content = componentView;
 
@@ -201,7 +209,7 @@ export class PageRouterOutlet extends RouterOutlet {
         }
 
         if (this.location.isPageNavigatingBack()) {
-            log("PageRouterOutlet.deactivate() while going back - should dispose: " + instruction.componentType.name)
+            log("PageRouterOutlet.deactivate() while going back - should destroy: " + instruction.componentType.name)
             return next.then((_) => {
                 const popedItem = this.refCache.pop();
                 const popedRef = popedItem.componentRef;
@@ -211,12 +219,12 @@ export class PageRouterOutlet extends RouterOutlet {
                 }
 
                 if (isPresent(this.componentRef)) {
-                    this.componentRef.dispose();
+                    this.componentRef.destroy();
                     this.componentRef = null;
                 }
 
                 if (isPresent(popedItem.loaderRef)) {
-                    popedItem.loaderRef.dispose();
+                    popedItem.loaderRef.destroy();
                 }
             });
         } else {
@@ -263,7 +271,6 @@ export class PageRouterOutlet extends RouterOutlet {
 
         log("PageRouterOutlet.routerCanReuse(): " + result);
         return PromiseWrapper.resolve(result);
-
     }
 
     /**

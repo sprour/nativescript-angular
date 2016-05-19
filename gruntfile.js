@@ -1,3 +1,4 @@
+var fs = require("fs");
 var path = require("path");
 var shelljs = require("shelljs");
 
@@ -10,13 +11,14 @@ module.exports = function(grunt) {
 
     var outDir = "bin/dist/modules";
     var moduleOutDir = path.join(outDir, "nativescript-angular");
+    var moduleOutPackageJson = path.join(moduleOutDir, "package.json");
     var packageName = "nativescript-angular-" +  require("./package.json").version + ".tgz";
 
     grunt.initConfig({
         ts: {
             build: {
                 src: [
-                    'src/**/*.ts',
+                     'src/**/*.ts',
                 ],
                 outDir: outDir,
                 options: {
@@ -37,6 +39,15 @@ module.exports = function(grunt) {
             packageJson: {
                 expand: true,
                 src: 'package.json',
+                dest: moduleOutDir
+            },
+            hookScripts: {
+                cwd: 'src/nativescript-angular',
+                expand: true,
+                src: [
+                    'postinstall.js',
+                    'hooks/**/*.js'
+                ],
                 dest: moduleOutDir
             },
             npmReadme: {
@@ -103,8 +114,24 @@ module.exports = function(grunt) {
     grunt.registerTask("build", [
         "ts:build",
         "copy:packageJson",
+        "copy:hookScripts",
+        "add-post-install-script",
+        "remove-tns-core-modules-dependency",
         "package"
     ]);
+
+    grunt.registerTask("add-post-install-script", function() {
+        var packageJson = JSON.parse(fs.readFileSync(moduleOutPackageJson, "utf-8"));
+        packageJson.scripts = packageJson.scripts || {};
+        packageJson.scripts.postinstall = "node postinstall.js";
+        fs.writeFileSync(moduleOutPackageJson, JSON.stringify(packageJson, null, "    "));
+    });
+
+    grunt.registerTask("remove-tns-core-modules-dependency", function() {
+        var packageJson = JSON.parse(fs.readFileSync(moduleOutPackageJson, "utf-8"));
+        delete packageJson.dependencies["tns-core-modules"];
+        fs.writeFileSync(moduleOutPackageJson, JSON.stringify(packageJson, null, "    "));
+    });
 
     grunt.registerTask("updateTests", ["all", "shell:updateTests"]);
     

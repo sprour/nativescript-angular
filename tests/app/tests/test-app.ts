@@ -1,8 +1,8 @@
-//make sure you import mocha-config before angular2/core
+//make sure you import mocha-config before @angular/core
 import {bootstrap, ProviderArray} from "nativescript-angular/application";
 import {Type, Component, ComponentRef, DynamicComponentLoader,
-    ViewChild, ElementRef, provide, ApplicationRef, Renderer
-} from "angular2/core";
+    ViewChild, ElementRef, provide, ApplicationRef, Renderer, ViewContainerRef
+} from "@angular/core";
 
 import {View} from "ui/core/view";
 import {GridLayout} from "ui/layouts/grid-layout";
@@ -16,16 +16,16 @@ import {APP_ROOT_VIEW} from "nativescript-angular/platform-providers";
 })
 export class TestApp {
     @ViewChild("loadSite") public loadSiteRef: ElementRef;
-    private _pendingDispose: ComponentRef[] = [];
+    private _pendingDispose: ComponentRef<any>[] = [];
 
     constructor(public loader: DynamicComponentLoader,
-        public elementRef: ElementRef,
+        public elementRef: ViewContainerRef,
         public appRef: ApplicationRef,
         public renderer: Renderer) {
     }
 
-    public loadComponent(type: Type): Promise<ComponentRef> {
-        return this.loader.loadIntoLocation(type, this.elementRef, "loadSite").then((componentRef) => {
+    public loadComponent(type: Type): Promise<ComponentRef<any>> {
+        return this.loader.loadNextToLocation(type, this.elementRef).then((componentRef) => {
             this._pendingDispose.push(componentRef);
             this.appRef.tick();
             return componentRef;
@@ -35,7 +35,7 @@ export class TestApp {
     public disposeComponents() {
         while (this._pendingDispose.length > 0) {
             const componentRef = this._pendingDispose.pop()
-            componentRef.dispose();
+            componentRef.destroy();
         }
     }
 

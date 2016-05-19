@@ -1,14 +1,13 @@
-import {Inject, Injectable, Optional} from 'angular2/src/core/di';
+import {Inject, Injectable, Optional} from '@angular/core/src/di';
 import {
     Renderer,
     RootRenderer,
     RenderComponentType,
     RenderDebugInfo
-} from 'angular2/src/core/render/api';
+} from '@angular/core/src/render/api';
 import {APP_ROOT_VIEW, DEVICE} from "./platform-providers";
-import {isBlank} from 'angular2/src/facade/lang';
-import {DOM} from 'angular2/src/platform/dom/dom_adapter';
-import {COMPONENT_VARIABLE, CONTENT_ATTR} from 'angular2/src/platform/dom/dom_renderer';
+import {isBlank} from '@angular/core/src/facade/lang';
+import {CONTENT_ATTR} from '@angular/platform-browser/src/dom/dom_renderer';
 import {View} from "ui/core/view";
 import * as application from "application";
 import {topmost} from 'ui/frame';
@@ -114,11 +113,17 @@ export class NativeScriptRenderer extends Renderer {
 
     attachViewAfter(anchorNode: NgView, viewRootNodes: NgView[]) {
         traceLog('NativeScriptRenderer.attachViewAfter: ' + anchorNode.nodeName + ' ' + anchorNode);
-        const parent = (<NgView>anchorNode.parent || anchorNode.templateParent);
+        //HACK: The anchor.templateParent precedence and child.templateParent
+        //assignment are a workaround for RadSideDrawer.
+        //Remove it once we ship the fix in the RadSideDrawer directives.
+        const parent = (anchorNode.templateParent || <NgView>anchorNode.parent);
         const insertPosition = this.viewUtil.getChildIndex(parent, anchorNode);
 
         viewRootNodes.forEach((node, index) => {
             const childIndex = insertPosition + index + 1;
+            //Remember the template parent in case someone moves the view element
+            //before Angular attaches the next view.
+            node.templateParent = parent;
             this.viewUtil.insertChild(parent, node, childIndex);
             this.animateNodeEnter(node);
         });
@@ -209,7 +214,7 @@ export class NativeScriptRenderer extends Renderer {
         });
     }
 
-    public createText(value: string): NgView {
+    public createText(parentElement: NgView, value: string): NgView {
         traceLog('NativeScriptRenderer.createText');
         return this.viewUtil.createText(value);;
     }

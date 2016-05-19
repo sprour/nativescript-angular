@@ -17,6 +17,7 @@ import trace = require("trace");
 trace.enable();
 
 import {RendererTest} from './examples/renderer-test';
+import {TabViewTest} from './examples/tab-view/tab-view-test';
 import {Benchmark} from './performance/benchmark';
 import {ListTest} from './examples/list/list-test';
 import {ListTestAsync} from "./examples/list/list-test-async";
@@ -27,20 +28,15 @@ import {ModalTest} from "./examples/modal/modal-test";
 import {PlatfromDirectivesTest} from "./examples/platform-directives/platform-directives-test";
 import {RouterOutletTest} from "./examples/navigation/router-outlet-test";
 
-nativeScriptBootstrap(RendererTest).then((compRef) => {
-    console.log("nativeScriptBootstrap resloved: " + compRef);
-}).catch((e) => {
-    console.log("nativeScriptBootstrap error: " + e);
-});
-//nativeScriptBootstrap(Benchmark);
-//nativeScriptBootstrap(ListTest);
-//nativeScriptBootstrap(ListTestAsync);
+nativeScriptBootstrap(RendererTest);
+//nativeScriptBootstrap(TabViewTest);
 //nativeScriptBootstrap(Benchmark);
 //nativeScriptBootstrap(ListTest);
 //nativeScriptBootstrap(ListTestAsync);
 //nativeScriptBootstrap(ImageTest);
 //nativeScriptBootstrap(NavigationTest, [NS_ROUTER_PROVIDERS]);
-// nativeScriptBootstrap(ActionBarTest, [NS_ROUTER_PROVIDERS], { startPageActionBarHidden: false });
-// nativeScriptBootstrap(ModalTest);
-// nativeScriptBootstrap(PlatfromDirectivesTest);
-// nativeScriptBootstrap(RouterOutletTest, [NS_ROUTER_PROVIDERS]);
+//nativeScriptBootstrap(ActionBarTest, [NS_ROUTER_PROVIDERS], { startPageActionBarHidden: false });
+//nativeScriptBootstrap(ActionBarTest, [NS_ROUTER_PROVIDERS]);
+//nativeScriptBootstrap(ModalTest);
+//nativeScriptBootstrap(PlatfromDirectivesTest);
+//nativeScriptBootstrap(RouterOutletTest, [NS_ROUTER_PROVIDERS]);

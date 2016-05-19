@@ -1,4 +1,4 @@
-import {Component} from "angular2/core";
+import {Component} from "@angular/core";
 import {
     GestureEventData,
     PanGestureEventData,
@@ -9,7 +9,7 @@ import {
 
 @Component({
     selector: "gestures",
-    templateUrl: "snippets/gestures.component.xml",
+    templateUrl: "snippets/gestures.component.html",
     styles:['label { font-size: 32; margin: 2; background-color: lightgreen;}']
 })
 export class GestureComponent {

@@ -1,4 +1,4 @@
-import {Component, Directive, Host, ElementRef, Input} from 'angular2/core';
+import {Component, Directive, Host, ElementRef, Input} from '@angular/core';
 import {Observable} from 'data/observable';
 import {TextValueAccessor} from '../nativescript-angular/value-accessors/text-value-accessor';
 import {CheckedValueAccessor} from '../nativescript-angular/value-accessors/checked-value-accessor';
@@ -54,12 +54,13 @@ export class RendererTest {
             'search': null,
             'selectedIndex': 0,
             'listPickerItems': [
-                1,2,3,4,5
+                1,2,3,4
             ],
             'segmentedBarItems': [
                 {'title': 'first'},
                 {'title': 'second'},
-                {'title': 'third'}
+                {'title': 'third'},
+                {'title': 'fourth'}
             ]
         });
 

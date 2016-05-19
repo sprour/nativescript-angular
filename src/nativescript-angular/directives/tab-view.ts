@@ -1,15 +1,40 @@
-import {ElementRef, Directive, Input, TemplateRef, ViewContainerRef} from "angular2/core";
+import {ElementRef, Directive, Input, TemplateRef, ViewContainerRef} from "@angular/core";
 import {TabView, TabViewItem} from "ui/tab-view";
-import {isView} from "../view-util";
+import * as utils from '../common/utils';
+import {isBlank} from '@angular/core/src/facade/lang';
 
 @Directive({
-    selector: 'TabView'
+    selector: 'TabView',
+    inputs: ['selectedIndex']
 })
 export class TabViewDirective {
     public tabView: TabView;
+    private _selectedIndex: number;
+    private viewInitialized: boolean;
+    
+    get selectedIndex(): number {
+        return this._selectedIndex;
+    }
+    
+    set selectedIndex(value) {
+        debugger;
+        this._selectedIndex = utils.convertToInt(value);
+        if (this.viewInitialized) {
+            this.tabView.selectedIndex = this._selectedIndex;
+        }
+    }
 
     constructor(private element: ElementRef) {
         this.tabView = element.nativeElement;
+    }
+    
+    ngAfterViewInit() {
+        this.viewInitialized = true;
+        debugger;
+        console.log("this._selectedIndex: " + this._selectedIndex);
+        if (!isBlank(this._selectedIndex)) {
+            this.tabView.selectedIndex = this._selectedIndex;
+        }
     }
 }
 
@@ -21,7 +46,7 @@ export class TabViewItemDirective {
 
     constructor(
         private owner: TabViewDirective,
-        private templateRef: TemplateRef,
+        private templateRef: TemplateRef<any>,
         private viewContainer: ViewContainerRef
     ) {
     }
@@ -31,6 +56,8 @@ export class TabViewItemDirective {
     ngOnInit() {
         this.item = new TabViewItem();
         this.item.title = this.config.title;
+        
+        this.item.iconSource = this.config.iconSource;
 
         const viewRef = this.viewContainer.createEmbeddedView(this.templateRef);
         //Filter out text nodes, etc

@@ -2,7 +2,7 @@ import {assert} from "./test-config";
 import {
     ElementRef,
     Component
-} from 'angular2/core';
+} from '@angular/core';
 import {TestApp} from "./test-app";
 import {device, platformNames} from "platform";
 const IS_IOS = (device.os === platformNames.ios);
@@ -44,7 +44,7 @@ export class TestListViewComponent {
 }
 
 // TODO: Skip list-view test until karma test launcher double navigate bug is fixed
-(IS_IOS ? describe.skip : describe)('ListView-tests', () => {
+describe.skip('ListView-tests', () => {
     let testApp: TestApp = null;
 
     before(() => {
@@ -65,6 +65,7 @@ export class TestListViewComponent {
         return testApp.loadComponent(TestListViewComponent).then((componentRef) => {
             const component = componentRef.instance;
             setTimeout(() => {
+                console.log("component: " + component);
                 assert.equal(component.counter, 2);
                 done();
             }, 1000);
