@@ -18,7 +18,7 @@ const NUMBER_VALUE_ACCESSOR = provide(NG_VALUE_ACCESSOR, { useExisting: forwardR
 @Directive({
     selector: 'Slider[ngModel]',
     host: { '(valueChange)': 'onChange($event.value)' },
-    bindings: [NUMBER_VALUE_ACCESSOR]
+    providers: [NUMBER_VALUE_ACCESSOR]
 })
 export class NumberValueAccessor extends BaseValueAccessor<Slider> {
     onTouched = () => { };

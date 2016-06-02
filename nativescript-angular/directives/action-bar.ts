@@ -5,6 +5,8 @@ import {Page} from "ui/page";
 import {View} from 'ui/core/view';
 import {registerElement, ViewClassMeta, NgView } from '../element-registry';
 
+declare var require: any;
+
 var actionBarMeta: ViewClassMeta = {
     skipAddToDom: true,
     insertChild: (parent: NgView, child: NgView, atIndex: number) => {

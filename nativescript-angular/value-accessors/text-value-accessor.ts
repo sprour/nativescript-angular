@@ -20,7 +20,7 @@ export type TextView = {text: string} & View;
 @Directive({
     selector: 'TextField[ngModel], TextView[ngModel], SearchBar[ngModel]',
     host: { '(textChange)': 'onChange($event.value)' },
-    bindings: [TEXT_VALUE_ACCESSOR]
+    providers: [TEXT_VALUE_ACCESSOR]
 })
 export class TextValueAccessor extends BaseValueAccessor<TextView> {
     onTouched = () => { };

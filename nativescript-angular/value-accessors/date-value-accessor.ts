@@ -18,7 +18,7 @@ const DATE_VALUE_ACCESSOR = provide(NG_VALUE_ACCESSOR, { useExisting: forwardRef
 @Directive({
     selector: 'DatePicker[ngModel]',
     host: { '(dateChange)': 'onChange($event.value)' },
-    bindings: [DATE_VALUE_ACCESSOR]
+    providers: [DATE_VALUE_ACCESSOR]
 })
 export class DateValueAccessor extends BaseValueAccessor<DatePicker> {
     onTouched = () => { };

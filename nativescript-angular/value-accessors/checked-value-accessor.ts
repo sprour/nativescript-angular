@@ -18,7 +18,7 @@ const CHECKED_VALUE_ACCESSOR = provide(NG_VALUE_ACCESSOR, { useExisting: forward
 @Directive({
     selector: 'Switch[ngModel]',
     host: { '(checkedChange)': 'onChange($event.value)' },
-    bindings: [CHECKED_VALUE_ACCESSOR]
+    providers: [CHECKED_VALUE_ACCESSOR]
 })
 export class CheckedValueAccessor extends BaseValueAccessor<Switch> {
     onTouched = () => { };

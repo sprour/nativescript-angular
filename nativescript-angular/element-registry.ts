@@ -1,5 +1,7 @@
 import {View} from 'ui/core/view';
 
+declare var require: any;
+
 export type ViewResolver = () => ViewClass;
 export type NgView = View & ViewExtensions;
 

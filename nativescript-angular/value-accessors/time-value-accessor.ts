@@ -18,7 +18,7 @@ const TIME_VALUE_ACCESSOR = provide(NG_VALUE_ACCESSOR, { useExisting: forwardRef
 @Directive({
     selector: 'TimePicker[ngModel]',
     host: { '(timeChange)': 'onChange($event.value)' },
-    bindings: [TIME_VALUE_ACCESSOR]
+    providers: [TIME_VALUE_ACCESSOR]
 })
 export class TimeValueAccessor extends BaseValueAccessor<TimePicker> {
     onTouched = () => { };

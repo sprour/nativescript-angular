@@ -21,7 +21,7 @@ export type SelectableView = {selectedIndex: number} & View;
 @Directive({
     selector: 'SegmentedBar[ngModel], ListPicker[ngModel], TabView[ngModel]',
     host: { '(selectedIndexChange)': 'onChange($event.value)' },
-    bindings: [SELECTED_INDEX_VALUE_ACCESSOR]
+    providers: [SELECTED_INDEX_VALUE_ACCESSOR]
 })
 export class SelectedIndexValueAccessor extends BaseValueAccessor<SelectableView> {
     onTouched = () => { };

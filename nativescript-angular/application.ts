@@ -5,7 +5,7 @@ import 'reflect-metadata';
 import './polyfills/array';
 import {SanitizationService} from '@angular/core/src/security';
 import {isPresent, Type, print} from '@angular/core/src/facade/lang';
-import {ReflectiveInjector, reflector, coreLoadAndBootstrap, createPlatform, 
+import {ReflectiveInjector, coreLoadAndBootstrap, createPlatform, 
         getPlatform, assertPlatform, ComponentRef, PlatformRef, PLATFORM_DIRECTIVES, PLATFORM_PIPES} from '@angular/core';
 import {bind, provide, Provider} from '@angular/core/src/di';
 
@@ -20,7 +20,8 @@ import {APPLICATION_COMMON_PROVIDERS} from '@angular/core/src/application_common
 import {PLATFORM_COMMON_PROVIDERS} from '@angular/core/src/platform_common_providers';
 import {COMMON_DIRECTIVES, COMMON_PIPES, FORM_PROVIDERS} from "@angular/common";
 import {NS_DIRECTIVES} from './directives';
-import {ReflectionCapabilities} from '@angular/core/src/reflection/reflection_capabilities';
+// import {ReflectionCapabilities} from '@angular/core/src/reflection/reflection_capabilities';
+// import {Reflector} from '@angular/core/src/reflection/reflector';
 
 import {Page} from 'ui/page';
 import {TextView} from 'ui/text-view';
@@ -28,7 +29,7 @@ import application = require('application');
 
 export type ProviderArray = Array<Type | Provider | any[]>;
 
-import {defaultPageProvider, defaultDeviceProvider} from "./platform-providers";
+import {defaultPageProvider, defaultDeviceProvider, defaultAnimationDriverProvider} from "./platform-providers";
 
 import * as nativescriptIntl from "nativescript-intl";
 global.Intl = nativescriptIntl;
@@ -65,6 +66,7 @@ export function bootstrap(appComponentType: any,
 
         defaultPageProvider,
         defaultDeviceProvider,
+        defaultAnimationDriverProvider,
         NativeScriptRootRenderer,
         provide(RootRenderer, { useClass: NativeScriptRootRenderer }),
         NativeScriptRenderer,
@@ -86,9 +88,11 @@ export function bootstrap(appComponentType: any,
         platform = createPlatform(ReflectiveInjector.resolveAndCreate(platformProviders));
     }
     
-    reflector.reflectionCapabilities = new ReflectionCapabilities();
+    // new Reflector(new ReflectionCapabilities());
+    // reflector.reflectionCapabilities = new ReflectionCapabilities();
+
     var appInjector = ReflectiveInjector.resolveAndCreate(appProviders, platform.injector);
-    return coreLoadAndBootstrap(appInjector, appComponentType);
+    return coreLoadAndBootstrap(appComponentType, appInjector);
 }
 
 export function nativeScriptBootstrap(appComponentType: any, customProviders?: ProviderArray, appOptions?: AppOptions): Promise<ComponentRef<any>> {
