@@ -1,3 +1,7 @@
 .test { 
     background-color: cornflowerblue; 
 }
+
+button {
+    margin: 0 10;
+}
